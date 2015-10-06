@@ -4,6 +4,7 @@ import (
 	"testing"
 	"fmt"
 	"strings"
+	"time"
 )
 
 func TestParseNum(t *testing.T) {
@@ -31,6 +32,17 @@ func TestHeap(t *testing.T) {
 func TestCall(t *testing.T) {
 	res, err := New().Exec(strings.Split(
 		"草草草泥草马 草草草泥草草马 草草草泥泥草马 马草泥泥 泥马草泥 河蟹 马草草泥马 泥草草草 草马泥 泥草泥草 马泥马",
+		" "))
+
+	fmt.Println(res, err)
+}
+
+func TestInterrupt(t *testing.T) {
+	end := time.Now().Add(5 * time.Second)
+	res, err := New().SetInterrupter(func() bool {
+		return time.Now().After(end)
+	}).Exec(strings.Split(
+		"马草草泥马 马草马泥马",
 		" "))
 
 	fmt.Println(res, err)

@@ -10,6 +10,7 @@ package gmh
 type VM struct {
 	stack *stack
 	heap []int
+	interrupter func() bool
 }
 
 // Grass-Mud-Horse Instruction Modification Parameter

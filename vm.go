@@ -15,6 +15,13 @@ func New() *VM {
 	}
 }
 
+// The interrupter function will be called in the main loop
+// If the function returns true, the execution will be terminated immediately.
+func (this *VM) SetInterrupter(f func() bool) *VM {
+	this.interrupter = f
+	return this
+}
+
 // Execute commands
 func (this *VM) Exec(cmds []string) (res string, err error) {
 	labels := make(map[int]int)
@@ -40,6 +47,11 @@ func (this *VM) Exec(cmds []string) (res string, err error) {
 	}
 
 	for i := 0; i < len(cmds); i++ {
+		if (this.interrupter != nil) && this.interrupter() {
+			err = errors.New("Interrupted.")
+			return
+		}
+
 		cmd := cmds[i]
 		switch {
 			case strings.HasPrefix(cmd, STACK):
