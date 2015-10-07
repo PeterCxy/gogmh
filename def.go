@@ -11,6 +11,8 @@ type VM struct {
 	stack *stack
 	heap []int
 	interrupter func() bool
+	input func(string) string
+	buf string
 }
 
 // Grass-Mud-Horse Instruction Modification Parameter

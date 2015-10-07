@@ -12,6 +12,7 @@ func New() *VM {
 	return &VM {
 		stack: newStack(),
 		heap: make([]int, 0),
+		buf: "",
 	}
 }
 
@@ -20,6 +21,34 @@ func New() *VM {
 func (this *VM) SetInterrupter(f func() bool) *VM {
 	this.interrupter = f
 	return this
+}
+
+// The input function will be called when input buffer runs out
+// The function should return a string for input buffer.
+func (this *VM) SetInput(f func(string) string) *VM {
+	this.input = f
+	return this
+}
+
+func (this *VM) readInput(res *string) (r byte) {
+	if this.input == nil {
+		r = ' '
+		return
+	}
+
+	if len(this.buf) == 0 {
+		this.buf = this.input(*res)
+		(*res) = ""
+	}
+
+	if len(this.buf) > 0 {
+		r = this.buf[0]
+		this.buf = this.buf[1:]
+	} else {
+		r = ' '
+	}
+
+	return
 }
 
 // Execute commands
@@ -76,6 +105,28 @@ func (this *VM) Exec(cmds []string) (res string, err error) {
 
 						if m != nil {
 							res += fmt.Sprintf("%d", m.(int))
+						}
+					case strings.HasPrefix(c, SCAN_CHAR):
+						m := this.stack.pop()
+
+						if m != nil {
+							r := this.readInput(&res)
+
+							if this.checkHeap(m.(int), true) {
+								this.heap[m.(int)] = int(r)
+							}
+						}
+					case strings.HasPrefix(c, SCAN_NUM):
+						m := this.stack.pop()
+
+						if m != nil {
+							r := this.readInput(&res)
+
+							var n int64
+							n, err = strconv.ParseInt(string(r), 10, 32)
+							if this.checkHeap(m.(int), true) {
+								this.heap[m.(int)] = int(n)
+							}
 						}
 				}
 			case strings.HasPrefix(cmd, FLOW):

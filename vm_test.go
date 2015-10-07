@@ -37,6 +37,26 @@ func TestCall(t *testing.T) {
 	fmt.Println(res, err)
 }
 
+func TestReadChar(t *testing.T) {
+	res, err := New().SetInput(func(string) string {
+		return "WTF"
+	}).Exec(strings.Split(
+		"草草草泥马 草马草 草马草 草马草 泥马泥草 泥泥泥 泥马草草 泥马泥草  泥泥泥 泥马草草",
+		" "))
+
+	fmt.Println(res, err)
+}
+
+func TestReadInt(t *testing.T) {
+	res, err := New().SetInput(func(string) string {
+		return "123"
+	}).Exec(strings.Split(
+		"草草草泥马 草马草 草马草 草马草 泥马泥泥 泥泥泥 泥马草泥 泥马泥泥  泥泥泥 泥马草泥",
+		" "))
+
+	fmt.Println(res, err)
+}
+
 func TestInterrupt(t *testing.T) {
 	end := time.Now().Add(5 * time.Second)
 	res, err := New().SetInterrupter(func() bool {
