@@ -1,18 +1,18 @@
 package gmh
 
 import (
-	"strings"
 	"errors"
-	"strconv"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 // Create a new instance of the VM
 func New() *VM {
-	return &VM {
+	return &VM{
 		stack: newStack(),
-		heap: make([]int, 0),
-		buf: "",
+		heap:  make([]int, 0),
+		buf:   "",
 	}
 }
 
@@ -83,142 +83,142 @@ func (this *VM) Exec(cmds []string) (res string, err error) {
 
 		cmd := cmds[i]
 		switch {
-			case strings.HasPrefix(cmd, STACK):
-				err = this.opStack(cmd[len(STACK):])
-			case strings.HasPrefix(cmd, MATH):
-				err = this.opMath(cmd[len(MATH):])
-			case strings.HasPrefix(cmd, HEAP):
-				err = this.opHeap(cmd[len(HEAP):])
-			case strings.HasPrefix(cmd, IO):
-				// I/O control, do it here
-				c := cmd[len(IO):]
+		case strings.HasPrefix(cmd, STACK):
+			err = this.opStack(cmd[len(STACK):])
+		case strings.HasPrefix(cmd, MATH):
+			err = this.opMath(cmd[len(MATH):])
+		case strings.HasPrefix(cmd, HEAP):
+			err = this.opHeap(cmd[len(HEAP):])
+		case strings.HasPrefix(cmd, IO):
+			// I/O control, do it here
+			c := cmd[len(IO):]
 
-				switch {
-					case strings.HasPrefix(c, PRINT_CHAR):
-						m := this.stack.pop()
+			switch {
+			case strings.HasPrefix(c, PRINT_CHAR):
+				m := this.stack.pop()
 
-						if m != nil {
-							res += string(m.(int))
-						}
-					case strings.HasPrefix(c, PRINT_NUM):
-						m := this.stack.pop()
-
-						if m != nil {
-							res += fmt.Sprintf("%d", m.(int))
-						}
-					case strings.HasPrefix(c, SCAN_CHAR):
-						m := this.stack.pop()
-
-						if m != nil {
-							r := this.readInput(&res)
-
-							if this.checkHeap(m.(int), true) {
-								this.heap[m.(int)] = int(r)
-							}
-						}
-					case strings.HasPrefix(c, SCAN_NUM):
-						m := this.stack.pop()
-
-						if m != nil {
-							r := this.readInput(&res)
-
-							var n int64
-							n, err = strconv.ParseInt(string(r), 10, 32)
-							if this.checkHeap(m.(int), true) {
-								this.heap[m.(int)] = int(n)
-							}
-						}
+				if m != nil {
+					res += string(m.(int))
 				}
-			case strings.HasPrefix(cmd, FLOW):
-				// Flow control, do it here
-				c := cmd[len(FLOW):]
+			case strings.HasPrefix(c, PRINT_NUM):
+				m := this.stack.pop()
 
-				switch {
-					case strings.HasPrefix(c, END1):
-						return
-					//case strings.HasPrefix(c, MARK):
-						// Mark a point
-					//	var num int
-					//	num, err = parseNum(c[len(MARK):], false)
-
-					//	if err == nil {
-					//		labels[num] = i
-					//	}
-					case strings.HasPrefix(c, CALL):
-						// Call a label as a function
-						var num int
-						num, err = parseNum(c[len(CALL):], false)
-
-						if err == nil {
-							calls.push(i)
-
-							if val, ok := labels[num]; ok {
-								i = val
-							} else {
-								err = errors.New(fmt.Sprintf("Label %d not found.", num))
-							}
-						}
-					case strings.HasPrefix(c, RETURN):
-						m := calls.pop()
-
-						if m == nil {
-							err = errors.New("Cannot return to caller.")
-							return
-						}
-
-						i = m.(int)
-					case strings.HasPrefix(c, JUMP):
-						// Jump to a label
-						var num int
-						num, err = parseNum(c[len(JUMP):], false)
-
-						if err == nil {
-							if val, ok := labels[num]; ok {
-								i = val
-							}
-						}
-					case strings.HasPrefix(c, JUMP_ZERO):
-						// Jump to a label if top of stack is 0
-						m := this.stack.pop()
-
-						if m == nil {
-							err = errors.New("Stack has no elements.")
-							return
-						}
-
-						if m.(int) == 0 {
-							var num int
-							num, err = parseNum(c[len(JUMP_ZERO):], false)
-
-							if err == nil {
-								if val, ok := labels[num]; ok {
-									i = val
-								}
-							}
-						}
-					case strings.HasPrefix(c, JUMP_SUBZERO):
-						// Jump to a label if top of stack is negative
-						m := this.stack.pop()
-
-						if m == nil {
-							err = errors.New("Stack has no elements.")
-							return
-						}
-
-						if m.(int) < 0 {
-							var num int
-							num, err = parseNum(c[len(JUMP_SUBZERO):], false)
-
-							if err == nil {
-								if val, ok := labels[num]; ok {
-									i = val
-								}
-							}
-						}
-
+				if m != nil {
+					res += fmt.Sprintf("%d", m.(int))
 				}
-			case cmd == END2:
+			case strings.HasPrefix(c, SCAN_CHAR):
+				m := this.stack.pop()
+
+				if m != nil {
+					r := this.readInput(&res)
+
+					if this.checkHeap(m.(int), true) {
+						this.heap[m.(int)] = int(r)
+					}
+				}
+			case strings.HasPrefix(c, SCAN_NUM):
+				m := this.stack.pop()
+
+				if m != nil {
+					r := this.readInput(&res)
+
+					var n int64
+					n, err = strconv.ParseInt(string(r), 10, 32)
+					if this.checkHeap(m.(int), true) {
+						this.heap[m.(int)] = int(n)
+					}
+				}
+			}
+		case strings.HasPrefix(cmd, FLOW):
+			// Flow control, do it here
+			c := cmd[len(FLOW):]
+
+			switch {
+			case strings.HasPrefix(c, END1):
 				return
+			//case strings.HasPrefix(c, MARK):
+			// Mark a point
+			//	var num int
+			//	num, err = parseNum(c[len(MARK):], false)
+
+			//	if err == nil {
+			//		labels[num] = i
+			//	}
+			case strings.HasPrefix(c, CALL):
+				// Call a label as a function
+				var num int
+				num, err = parseNum(c[len(CALL):], false)
+
+				if err == nil {
+					calls.push(i)
+
+					if val, ok := labels[num]; ok {
+						i = val
+					} else {
+						err = errors.New(fmt.Sprintf("Label %d not found.", num))
+					}
+				}
+			case strings.HasPrefix(c, RETURN):
+				m := calls.pop()
+
+				if m == nil {
+					err = errors.New("Cannot return to caller.")
+					return
+				}
+
+				i = m.(int)
+			case strings.HasPrefix(c, JUMP):
+				// Jump to a label
+				var num int
+				num, err = parseNum(c[len(JUMP):], false)
+
+				if err == nil {
+					if val, ok := labels[num]; ok {
+						i = val
+					}
+				}
+			case strings.HasPrefix(c, JUMP_ZERO):
+				// Jump to a label if top of stack is 0
+				m := this.stack.pop()
+
+				if m == nil {
+					err = errors.New("Stack has no elements.")
+					return
+				}
+
+				if m.(int) == 0 {
+					var num int
+					num, err = parseNum(c[len(JUMP_ZERO):], false)
+
+					if err == nil {
+						if val, ok := labels[num]; ok {
+							i = val
+						}
+					}
+				}
+			case strings.HasPrefix(c, JUMP_SUBZERO):
+				// Jump to a label if top of stack is negative
+				m := this.stack.pop()
+
+				if m == nil {
+					err = errors.New("Stack has no elements.")
+					return
+				}
+
+				if m.(int) < 0 {
+					var num int
+					num, err = parseNum(c[len(JUMP_SUBZERO):], false)
+
+					if err == nil {
+						if val, ok := labels[num]; ok {
+							i = val
+						}
+					}
+				}
+
+			}
+		case cmd == END2:
+			return
 		}
 
 		//fmt.Println(i)
@@ -234,71 +234,71 @@ func (this *VM) Exec(cmds []string) (res string, err error) {
 // Stack operation
 func (this *VM) opStack(cmd string) (err error) {
 	switch {
-		case strings.HasPrefix(cmd, PUSH):
-			// Push into stack
-			var num int
-			num, err = parseNum(cmd[len(PUSH):], true)
+	case strings.HasPrefix(cmd, PUSH):
+		// Push into stack
+		var num int
+		num, err = parseNum(cmd[len(PUSH):], true)
 
-			if err == nil {
-				this.stack.push(num)
+		if err == nil {
+			this.stack.push(num)
+		}
+	case strings.HasPrefix(cmd, DUPLICATE):
+		// Duplicate the top item
+		m := this.stack.pop()
+
+		// Double-push
+		this.stack.push(m).push(m)
+	case strings.HasPrefix(cmd, COPY):
+		// Copy an item onto the top
+		var num int
+		num, err = parseNum(cmd[len(COPY):], true)
+
+		if err == nil {
+			tmp := newStack()
+			for i := 0; i < num-1; i++ {
+				tmp.push(this.stack.pop())
 			}
-		case strings.HasPrefix(cmd, DUPLICATE):
-			// Duplicate the top item
+
 			m := this.stack.pop()
-
-			// Double-push
-			this.stack.push(m).push(m)
-		case strings.HasPrefix(cmd, COPY):
-			// Copy an item onto the top
-			var num int
-			num, err = parseNum(cmd[len(COPY):], true)
-
-			if err == nil {
-				tmp := newStack()
-				for i := 0; i < num - 1; i++ {
-					tmp.push(this.stack.pop())
-				}
-
-				m := this.stack.pop()
-
-				this.stack.push(m)
-
-				for {
-					t := tmp.pop()
-
-					if t == nil {
-						break
-					}
-
-					this.stack.push(t)
-				}
-
-				this.stack.push(m)
-			}
-		case strings.HasPrefix(cmd, SWAP):
-			// Swap the top two items
-			m := this.stack.pop()
-			n := this.stack.pop()
 
 			this.stack.push(m)
-			this.stack.push(n)
-		case strings.HasPrefix(cmd, DISCARD):
-			// Discard the top
-			this.stack.pop() // Throw it to GC
-		case strings.HasPrefix(cmd, SLIDE):
-			// Slide n items from the top but keep the top
-			var num int
-			num, err = parseNum(cmd[len(SLIDE):], true)
 
-			if err == nil {
-				m := this.stack.pop()
+			for {
+				t := tmp.pop()
 
-				for i := 0; i < num; i++ {
-					this.stack.pop()
+				if t == nil {
+					break
 				}
 
-				this.stack.push(m)
+				this.stack.push(t)
 			}
+
+			this.stack.push(m)
+		}
+	case strings.HasPrefix(cmd, SWAP):
+		// Swap the top two items
+		m := this.stack.pop()
+		n := this.stack.pop()
+
+		this.stack.push(m)
+		this.stack.push(n)
+	case strings.HasPrefix(cmd, DISCARD):
+		// Discard the top
+		this.stack.pop() // Throw it to GC
+	case strings.HasPrefix(cmd, SLIDE):
+		// Slide n items from the top but keep the top
+		var num int
+		num, err = parseNum(cmd[len(SLIDE):], true)
+
+		if err == nil {
+			m := this.stack.pop()
+
+			for i := 0; i < num; i++ {
+				this.stack.pop()
+			}
+
+			this.stack.push(m)
+		}
 	}
 
 	return
@@ -318,25 +318,25 @@ func (this *VM) opMath(cmd string) (err error) {
 	y := n.(int)
 
 	switch {
-		case strings.HasPrefix(cmd, ADD):
-			this.stack.push(y + x)
+	case strings.HasPrefix(cmd, ADD):
+		this.stack.push(y + x)
+		return
+	case strings.HasPrefix(cmd, SUB):
+		this.stack.push(y - x)
+		return
+	case strings.HasPrefix(cmd, DIV):
+		if x == 0 {
+			err = errors.New("Cannot devide 0")
 			return
-		case strings.HasPrefix(cmd, SUB):
-			this.stack.push(y - x)
-			return
-		case strings.HasPrefix(cmd, DIV):
-			if x == 0 {
-				err = errors.New("Cannot devide 0")
-				return
-			}
-			this.stack.push(y / x)
-			return
-		case strings.HasPrefix(cmd, MUL):
-			this.stack.push(y * x)
-			return
-		case strings.HasPrefix(cmd, MOD):
-			this.stack.push(y % x)
-			return
+		}
+		this.stack.push(y / x)
+		return
+	case strings.HasPrefix(cmd, MUL):
+		this.stack.push(y * x)
+		return
+	case strings.HasPrefix(cmd, MOD):
+		this.stack.push(y % x)
+		return
 	}
 
 	// If arrived here, we've got an invalid operation
@@ -347,41 +347,41 @@ func (this *VM) opMath(cmd string) (err error) {
 // Heap
 func (this *VM) opHeap(cmd string) (err error) {
 	switch {
-		case strings.HasPrefix(cmd, STORE):
-			m := this.stack.pop()
-			n := this.stack.pop()
+	case strings.HasPrefix(cmd, STORE):
+		m := this.stack.pop()
+		n := this.stack.pop()
 
-			if (m == nil) || (n == nil) {
-				err = errors.New("Missing argument for heap operation")
-				return
-			}
-
-			x := m.(int)
-			y := n.(int)
-
-			if !this.checkHeap(y, true) {
-				err = errors.New(fmt.Sprintf("Heap address %d inaccessible", y))
-			}
-
-			this.heap[y] = x
+		if (m == nil) || (n == nil) {
+			err = errors.New("Missing argument for heap operation")
 			return
-		case strings.HasPrefix(cmd, RETRIEVE):
-			m := this.stack.pop()
+		}
 
-			if m == nil {
-				err = errors.New("Missing argument for heap operation")
-				return
-			}
+		x := m.(int)
+		y := n.(int)
 
-			x := m.(int)
+		if !this.checkHeap(y, true) {
+			err = errors.New(fmt.Sprintf("Heap address %d inaccessible", y))
+		}
 
-			if !this.checkHeap(x, false) {
-				err = errors.New(fmt.Sprintf("Invalid heap address %d", x))
-				return
-			}
+		this.heap[y] = x
+		return
+	case strings.HasPrefix(cmd, RETRIEVE):
+		m := this.stack.pop()
 
-			this.stack.push(this.heap[x])
+		if m == nil {
+			err = errors.New("Missing argument for heap operation")
 			return
+		}
+
+		x := m.(int)
+
+		if !this.checkHeap(x, false) {
+			err = errors.New(fmt.Sprintf("Invalid heap address %d", x))
+			return
+		}
+
+		this.stack.push(this.heap[x])
+		return
 	}
 
 	// Errored

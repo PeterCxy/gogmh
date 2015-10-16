@@ -9,7 +9,7 @@ type stack struct {
 }
 
 func newStack() *stack {
-	return &stack {
+	return &stack{
 		list: list.New(),
 	}
 }

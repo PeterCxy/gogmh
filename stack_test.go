@@ -1,9 +1,9 @@
 package gmh
 
 import (
-	"testing"
 	"fmt"
 	"math/rand"
+	"testing"
 )
 
 func TestPushPop(*testing.T) {
